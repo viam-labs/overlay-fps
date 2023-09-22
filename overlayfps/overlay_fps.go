@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"math"
 	"time"
 
 	"github.com/fogleman/gg"
@@ -17,7 +18,10 @@ import (
 )
 
 // ModelName is the name of the model
-const ModelName = "overlay-fps"
+const (
+	ModelName  = "overlay-fps"
+	CountLimit = math.MaxFloat64 / 500.0
+)
 
 var (
 	// Model is the full resource name of the model
@@ -92,7 +96,7 @@ func (o *overlay) Reconfigure(ctx context.Context, deps resource.Dependencies, c
 	if !ok {
 		return errors.Wrapf(err, "camera %v is not a video source for %s", cfg.CameraName, ModelName)
 	}
-	r := &reader{vs}
+	r := &reader{vs, 0.0, 0.0}
 	o.VideoSource, err = camera.NewVideoSourceFromReader(ctx, r, nil, props.ImageType)
 	if err != nil {
 		return err
@@ -111,11 +115,16 @@ func (o *overlay) Close(ctx context.Context) error {
 }
 
 type reader struct {
-	src camera.VideoSource
+	src      camera.VideoSource
+	countDur float64
+	avgDur   float64
 }
 
 // Read returns the image overlaid  with the FPS
 func (r *reader) Read(ctx context.Context) (image.Image, func(), error) {
+	if r.countDur >= CountLimit {
+		r.countDur = 0.0
+	}
 	// get image from source camera
 	start := time.Now()
 	img, release, err := camera.ReadImage(ctx, r.src)
@@ -123,8 +132,9 @@ func (r *reader) Read(ctx context.Context) (image.Image, func(), error) {
 		return nil, nil, errors.Wrapf(err, "could not get next source image")
 	}
 	duration := time.Since(start)
-	fps := 1. / duration.Seconds()
-	ovImg := overlayText(img, fmt.Sprintf("FPS: %.2f", fps))
+	r.avgDur = (duration.Seconds() + r.avgDur*r.countDur) / (r.countDur + 1.0)
+	r.countDur = r.countDur + 1.0
+	ovImg := overlayText(img, fmt.Sprintf("avg. FPS: %.2f", 1./r.avgDur))
 	return ovImg, release, nil
 }
 

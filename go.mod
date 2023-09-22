@@ -1,6 +1,6 @@
 module github.com/viam-labs/overlay-fps
 
-go 1.21.1
+go 1.21
 
 require (
 	github.com/edaniels/golog v0.0.0-20230215213219-28954395e8d0

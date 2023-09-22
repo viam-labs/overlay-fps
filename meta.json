@@ -1,0 +1,13 @@
+{
+  "module_id": "viam-labs:overlay-fps",
+  "visibility": "public",
+  "url": "https://github.com/viam-labs/overlay-fps",
+  "description": "A virtual camera to overlay the frames-per-second (FPS) of the get_image() requests of the underlying camera ",
+  "models": [
+    {
+      "api": "rdk:component:camera",
+      "model": "viam-labs:camera:overlay-fps"
+    }
+  ],
+  "entrypoint": "overlay-fps"
+}
