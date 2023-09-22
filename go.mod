@@ -6,7 +6,6 @@ require (
 	github.com/edaniels/golog v0.0.0-20230215213219-28954395e8d0
 	github.com/fogleman/gg v1.3.0
 	github.com/pkg/errors v0.9.1
-	github.com/viamrobotics/gostream v0.0.0-20230725145737-ed58004e202e
 	go.viam.com/rdk v0.9.1
 	go.viam.com/utils v0.1.43
 )
@@ -107,6 +106,7 @@ require (
 	github.com/srikrsna/protoc-gen-gotag v0.6.2 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/viam-labs/go-libjpeg v0.3.1 // indirect
+	github.com/viamrobotics/gostream v0.0.0-20230725145737-ed58004e202e // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect

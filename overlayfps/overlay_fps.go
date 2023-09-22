@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/edaniels/golog"
-	"github.com/viamrobotics/gostream"
 	"go.viam.com/rdk/components/camera"
 	"go.viam.com/rdk/resource"
 	"go.viam.com/rdk/rimage"
@@ -50,8 +49,7 @@ func (cfg *Config) Validate(path string) ([]string, error) {
 
 type overlay struct {
 	resource.Named
-	stream     gostream.VideoStream
-	imgType    camera.ImageType
+	camera.VideoSource
 	cameraName string
 	logger     golog.Logger
 }
@@ -69,16 +67,13 @@ func newOverlay(
 	if err := o.Reconfigure(ctx, deps, conf); err != nil {
 		return nil, err
 	}
-	src, err := camera.NewVideoSourceFromReader(ctx, o, nil, o.imgType)
-	if err != nil {
-		return nil, err
-	}
-	return camera.FromVideoSource(conf.ResourceName(), src), nil
+	return camera.FromVideoSource(conf.ResourceName(), o), nil
 }
 
 func (o *overlay) Reconfigure(ctx context.Context, deps resource.Dependencies, conf resource.Config) error {
 	o.cameraName = ""
-	o.stream = nil
+	o.VideoSource = nil
+	// get the config
 	cfg, err := resource.NativeConfig[*Config](conf)
 	if err != nil {
 		return errors.Errorf("Could not assert proper config for %s", ModelName)
@@ -93,34 +88,16 @@ func (o *overlay) Reconfigure(ctx context.Context, deps resource.Dependencies, c
 	if err != nil {
 		return errors.Wrapf(err, "unable to get camera properties %v for %s", cfg.CameraName, ModelName)
 	}
-	o.imgType = props.ImageType
 	vs, ok := cam.(camera.VideoSource)
 	if !ok {
 		return errors.Wrapf(err, "camera %v is not a video source for %s", cfg.CameraName, ModelName)
 	}
-	o.stream = gostream.NewEmbeddedVideoStream(vs)
-	return nil
-}
-
-// Read returns the image overlaid  with the FPS
-func (o *overlay) Read(ctx context.Context) (image.Image, func(), error) {
-	// get image from source camera
-	start := time.Now()
-	img, release, err := o.stream.Next(ctx)
+	r := &reader{vs}
+	o.VideoSource, err = camera.NewVideoSourceFromReader(ctx, r, nil, props.ImageType)
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "could not get next source image")
+		return err
 	}
-	duration := time.Since(start)
-	fps := 1. / duration.Seconds()
-	ovImg := overlayText(img, fmt.Sprintf("FPS: %.2f", fps))
-	return ovImg, release, nil
-}
-
-// overlayText writes a string in the top of the image.
-func overlayText(img image.Image, text string) image.Image {
-	gimg := gg.NewContextForImage(img)
-	rimage.DrawString(gimg, text, image.Point{30, 30}, color.NRGBA{255, 0, 0, 255}, 30)
-	return gimg.Image()
+	return nil
 }
 
 // DoCommand simply echos whatever was sent.
@@ -130,5 +107,35 @@ func (o *overlay) DoCommand(ctx context.Context, cmd map[string]interface{}) (ma
 
 // Close closes the underlying stream.
 func (o *overlay) Close(ctx context.Context) error {
-	return o.stream.Close(ctx)
+	return o.VideoSource.Close(ctx)
+}
+
+type reader struct {
+	src camera.VideoSource
+}
+
+// Read returns the image overlaid  with the FPS
+func (r *reader) Read(ctx context.Context) (image.Image, func(), error) {
+	// get image from source camera
+	start := time.Now()
+	img, release, err := camera.ReadImage(ctx, r.src)
+	if err != nil {
+		return nil, nil, errors.Wrapf(err, "could not get next source image")
+	}
+	duration := time.Since(start)
+	fps := 1. / duration.Seconds()
+	ovImg := overlayText(img, fmt.Sprintf("FPS: %.2f", fps))
+	return ovImg, release, nil
+}
+
+// Close closes the underlying stream.
+func (r *reader) Close(ctx context.Context) error {
+	return r.src.Close(ctx)
+}
+
+// overlayText writes a string in the top of the image.
+func overlayText(img image.Image, text string) image.Image {
+	gimg := gg.NewContextForImage(img)
+	rimage.DrawString(gimg, text, image.Point{30, 30}, color.NRGBA{255, 0, 0, 255}, 30)
+	return gimg.Image()
 }
