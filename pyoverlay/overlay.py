@@ -15,7 +15,7 @@ from viam.services.vision import Vision
 import time
 
 class OverlayCam(Camera, Reconfigurable):
-    MODEL: ClassVar[Model] = Model(ModelFamily("viam-labs", "camera"), "fps-overlay")
+    MODEL: ClassVar[Model] = Model(ModelFamily("viam-labs", "camera"), "overlay-fps")
 
     def __init__(self, name: str):
         super().__init__(name)
