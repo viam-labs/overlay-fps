@@ -71,7 +71,7 @@ func newOverlay(
 	if err := o.Reconfigure(ctx, deps, conf); err != nil {
 		return nil, err
 	}
-	return camera.FromVideoSource(conf.ResourceName(), o), nil
+	return camera.FromVideoSource(conf.ResourceName(), o, logger), nil
 }
 
 func (o *overlay) Reconfigure(ctx context.Context, deps resource.Dependencies, conf resource.Config) error {
