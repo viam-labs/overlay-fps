@@ -10,10 +10,10 @@ async def main():
     """This function creates and starts a new module, after adding all desired resource models.
     Resource creators must be registered to the resource registry before the module adds the resource model.
     """
-    Registry.register_resource_creator(Camera.SUBTYPE, overlay.OverlayCam.MODEL, ResourceCreatorRegistration(overlay.OverlayCam.new_cam, overlay.OverlayCam.validate_config))
+    Registry.register_resource_creator(Camera.API, overlay.OverlayCam.MODEL, ResourceCreatorRegistration(overlay.OverlayCam.new_cam, overlay.OverlayCam.validate_config))
     module = Module.from_args()
 
-    module.add_model_from_registry(Camera.SUBTYPE, overlay.OverlayCam.MODEL)
+    module.add_model_from_registry(Camera.API, overlay.OverlayCam.MODEL)
     await module.start()
 
 if __name__ == "__main__":

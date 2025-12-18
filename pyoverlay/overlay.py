@@ -8,9 +8,9 @@ from viam.proto.common import ResourceName, ResponseMetadata, Geometry
 from viam.components.camera import Camera
 from viam.resource.types import Model, ModelFamily
 from viam.resource.base import ResourceBase
-from viam.media.video import NamedImage
-from PIL import Image, ImageDraw, ImageFont
-from viam.services.vision import Vision
+from viam.media.video import NamedImage, ViamImage
+from viam.media.utils.pil import viam_to_pil_image, pil_to_viam_image
+from PIL import ImageDraw, ImageFont
 
 import time
 
@@ -44,11 +44,12 @@ class OverlayCam(Camera, Reconfigurable):
         """Returns details about the camera"""
         return await self.actual_cam.get_properties()
 
-    async def get_image(self, mime_type: str = "", *, extra: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs) -> Image.Image:
+    async def get_image(self, mime_type: str = "", *, extra: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs) -> ViamImage:
         if mime_type == "":
             mime_type = "image/jpeg"
         start_time = time.time()
         img = await self.actual_cam.get_image(mime_type)
+        img = viam_to_pil_image(img)
         end_time = time.time()
         duration = end_time - start_time
         # overlay the fps
@@ -60,10 +61,13 @@ class OverlayCam(Camera, Reconfigurable):
         text_color = (255, 0, 0)
         formatted_text = "FPS: {:.2f}".format(1./duration)
         draw.text(position, formatted_text, fill=text_color, font=font)
+        img = pil_to_viam_image(img, mime_type)
         return img
 
     async def get_images(self, *, timeout: Optional[float] = None, **kwargs) -> Tuple[List[NamedImage], ResponseMetadata]:
-        raise NotImplementedError
+        img = await self.get_image()
+        named_image = NamedImage("overlay_fps_image", img.data, img.mime_type)
+        return [named_image], ResponseMetadata()
 
     async def get_point_cloud(self, *, extra: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None, **kwargs) -> Tuple[bytes, str]:
         raise NotImplementedError

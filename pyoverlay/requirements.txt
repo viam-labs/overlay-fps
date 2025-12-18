@@ -1,2 +1,2 @@
 # add a version if viam should be pinned to a specific version
-viam-sdk
+viam-sdk==0.63.0
