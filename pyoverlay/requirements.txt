@@ -1,3 +1,3 @@
 # add a version if viam should be pinned to a specific version
-viam-sdk==v0.21.0
+viam-sdk==0.63.0
 pillow

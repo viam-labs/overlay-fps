@@ -82,7 +82,9 @@ class OverlayCam(Camera, Reconfigurable):
     async def get_images(
         self, *, timeout: Optional[float] = None, **kwargs
     ) -> Tuple[List[NamedImage], ResponseMetadata]:
-        raise NotImplementedError
+        img = await self.get_image()
+        named_image = NamedImage("overlay_fps_image", img.data, img.mime_type)
+        return [named_image], ResponseMetadata()
 
     async def get_point_cloud(
         self,
