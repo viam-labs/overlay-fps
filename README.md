@@ -1,6 +1,6 @@
 # `overlay-fps` modular resource
 
-A virtual camera to overlay the frames-per-second (FPS) of the `get_image()` requests of the underlying camera
+A virtual camera to overlay the frames-per-second (FPS) of images from the underlying camera
 
 ![fps-camera-example](https://github.com/viam-labs/overlay-fps/assets/5212232/305a00dd-46fb-41d6-8445-ec7b59d94612)
 
