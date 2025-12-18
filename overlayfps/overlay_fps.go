@@ -11,8 +11,8 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/pkg/errors"
 
-	"github.com/edaniels/golog"
 	"go.viam.com/rdk/components/camera"
+	"go.viam.com/rdk/logging"
 	"go.viam.com/rdk/resource"
 	"go.viam.com/rdk/rimage"
 )
@@ -55,14 +55,14 @@ type overlay struct {
 	resource.Named
 	camera.VideoSource
 	cameraName string
-	logger     golog.Logger
+	logger     logging.Logger
 }
 
 func newOverlay(
 	ctx context.Context,
 	deps resource.Dependencies,
 	conf resource.Config,
-	logger golog.Logger,
+	logger logging.Logger,
 ) (camera.Camera, error) {
 	o := &overlay{
 		Named:  conf.ResourceName().AsNamed(),
