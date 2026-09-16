@@ -43,12 +43,12 @@ type Config struct {
 }
 
 // Validate will ensure that the underlying camera is present
-func (cfg *Config) Validate(path string) ([]string, error) {
+func (cfg *Config) Validate(path string) ([]string, []string, error) {
 	if cfg.CameraName == "" {
-		return nil, fmt.Errorf(`expected "camera_name" attribute for %s %q`, ModelName, path)
+		return nil, nil, fmt.Errorf(`expected "camera_name" attribute for %s %q`, ModelName, path)
 	}
 
-	return []string{cfg.CameraName}, nil
+	return []string{cfg.CameraName}, nil, nil
 }
 
 type overlay struct {
@@ -71,7 +71,7 @@ func newOverlay(
 	if err := o.Reconfigure(ctx, deps, conf); err != nil {
 		return nil, err
 	}
-	return camera.FromVideoSource(conf.ResourceName(), o, logger), nil
+	return camera.FromVideoSource(conf.ResourceName(), o.VideoSource), nil
 }
 
 func (o *overlay) Reconfigure(ctx context.Context, deps resource.Dependencies, conf resource.Config) error {
