@@ -25,8 +25,7 @@ const (
 
 var (
 	// Model is the full resource name of the model
-	Model            = resource.NewModel("viam-labs", "camera", ModelName)
-	errUnimplemented = errors.New("unimplemented")
+	Model = resource.NewModel("viam-labs", "camera", ModelName)
 )
 
 func init() {
@@ -84,7 +83,7 @@ func (o *overlay) Reconfigure(ctx context.Context, deps resource.Dependencies, c
 	}
 	// get the source camera
 	o.cameraName = cfg.CameraName
-	cam, err := camera.FromDependencies(deps, cfg.CameraName)
+	cam, err := camera.FromProvider(deps, cfg.CameraName)
 	if err != nil {
 		return errors.Wrapf(err, "unable to get camera %v for %s", cfg.CameraName, ModelName)
 	}
